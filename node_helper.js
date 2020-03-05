@@ -25,7 +25,7 @@ module.exports = NodeHelper.create({
 
             // Check to see if we are error free and got an OK response
             if (!error && response.statusCode == 200) { 
-                route = result.Routes[0]);
+                route = result.routes[0];
             } else {
                 // In all other cases it's some other error
             }

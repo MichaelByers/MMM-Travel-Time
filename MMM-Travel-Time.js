@@ -68,7 +68,7 @@ Module.register('MMM-Travel-Time', {
 	 	    wrapper.className = 'route';
 			
 			var day = moment().format('dddd');
-			var title = 'Travel Time to';
+			var title = 'Travel Time to ';
 			var travelTime = '';
 			var text = '';
 
@@ -79,12 +79,11 @@ Module.register('MMM-Travel-Time', {
 				title = title + 'Golf: ';
 			}
 
-			travelTime = this.route.summary.travelTimeInSeconds;
+			travelTime = Math.round(this.route.summary.travelTimeInSeconds/60);
 
 			text = title + travelTime + ' min';
 
     		wrapper.innerHTML = text;
-			}
         } else {
             // Otherwise lets just use a simple div
             wrapper = document.createElement('div');
