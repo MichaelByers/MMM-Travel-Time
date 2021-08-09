@@ -52,8 +52,12 @@ Module.register('MMM-Travel-Time', {
 		} else {
 			this.url = 'https://api.tomtom.com/routing/1/calculateRoute/' + this.config.olat + ','+ this.config.olong + ':' + this.config.glat + ',' + this.config.glong + '/json?computeTravelTimeFor=all&sectionType=traffic&traffic=true&travelMode=car&key=' + this.config.apikey;
 		}
-			// Make the initial request to the helper then set up the timer to perform the updates
-        _this.sendSocketNotification('GET-TRAVEL-TIME', _this.url);
+	// Make the initial request to the helper then set up the timer to perform the updates
+	var hour = moment().hour();
+
+	if( (hour >= 6) && (hour <=22) ) {
+            _this.sendSocketNotification('GET-TRAVEL-TIME', _this.url);
+        }
     },
 
 
@@ -73,7 +77,7 @@ Module.register('MMM-Travel-Time', {
 			var text = '';
 
 			// if weekday show drive time to work
-			if ((day != 'Saturday') && (day != 'Sunday')) {
+			if ((day != 'Saturday') && (day != 'Sunday') && (day != 'Friday')) {
 				title = title + 'Work: ';
 			} else {
 				title = title + 'Golf: ';
