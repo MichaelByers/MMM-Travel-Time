@@ -4,7 +4,7 @@
 */
 
 var NodeHelper = require('node_helper');
-var request = require('request');
+var axios = require('axios').default;
 var moment = require('moment');
 
 module.exports = NodeHelper.create({
@@ -19,25 +19,26 @@ module.exports = NodeHelper.create({
         var _this = this;
         this.url = payload;
 
-        request({url: this.url, method: 'GET'}, function(error, response, body) {
-            // Lets convert the body into JSON
-            var result;
+		axios.get(this.url)
+			.then(function (response) {
             var route = null; // Clear the array
-
             // Check to see if we are error free and got an OK response
-            if (!error && response.statusCode == 200) { 
-                result = JSON.parse(body);
-                route = result.routes[0];
+            if (response.status == 200) {
+                route = response.data.routes[0];
             } else {
                 // In all other cases it's some other error
-                console.log('[MMM-Travel-Time] ** ERROR ** : ' + error);
-//		_this.sendNotification("SHOW_ALERT", {title:'HTTP Error', message:error});
+                console.log('[MMM-Travel-Time] ** ERROR ** : ' + response.status);
             }
 
             // We have the response figured out so lets fire off the notifiction
             _this.sendSocketNotification('GOT-TRAVEL-TIME', {'url': _this.url, 'route': route});
-        });
-    },
+        })
+		.catch(function (error) {
+			// handle error
+			console.log( "[MMM-Travel-Time] " + moment().format("D-MMM-YY HH:mm") + " ** ERROR ** " + error );
+		});
+
+	},
 
     socketNotificationReceived: function(notification, payload) {
         // Check this is for us and if it is let's get the weather data
