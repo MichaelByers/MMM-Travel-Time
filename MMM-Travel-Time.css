@@ -1,6 +1,28 @@
 .route {
   display: flex;
+  flex-direction: column;
   text-align: center;
   padding-bottom: 5px;
-  font-size: 30px;
 }
+
+.row {
+  display: flex;
+  flex-direction: row;
+  text-align: center;
+  padding-bottom: 5px;
+}
+
+.icon {
+  margin-top: -5px;
+  margin-left: 10px;
+  text-align: center;
+}
+
+.tempText {
+  text-align: left;
+  font-size: 20px;
+  margin-top: 5px;
+  padding-left: 10px;
+}
+
+

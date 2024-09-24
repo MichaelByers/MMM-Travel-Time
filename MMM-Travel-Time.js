@@ -8,15 +8,21 @@
 Module.register('MMM-Travel-Time', {
 
 	defaults: {
-            apikey:    '',
-			olat:		0,
-			olong: 		-1,
-			dlat: 		0,
-			dlong: 		-1,
-			glat:		0,
-			glong:		-1,
-            interval:   300000 // Every 5 mins
-        },
+		apikey:    '',
+		start: {
+			lat:		0,
+			long: 		-1,
+		},
+		waypoint: [
+			{
+				title: '',
+				lat:	0,
+				long: 	-1,
+				icon: 	''
+			}
+		],
+		interval:   300000 // Every 5 mins
+	},
 
     // Define required scripts.
     getScripts: function() {
@@ -25,7 +31,7 @@ Module.register('MMM-Travel-Time', {
 
     start:  function() {
         Log.log('Starting module: ' + this.name);
-        var self = this;
+        let self = this;
 
         // Set up the local values, here we construct the request url to use
         this.loaded = false;
@@ -44,50 +50,50 @@ Module.register('MMM-Travel-Time', {
 
 
     getRouteData: function(_this) {
-		var day = moment().format('dddd');
- 
-		// if weekday show drive time to work
-		if ((day != 'Saturday') && (day != 'Sunday')) {
-			this.url = 'https://api.tomtom.com/routing/1/calculateRoute/' + this.config.olat + ','+ this.config.olong + ':' + this.config.dlat + ',' + this.config.dlong + '/json?computeTravelTimeFor=all&sectionType=traffic&traffic=true&travelMode=car&key=' + this.config.apikey;
-		} else {
-			this.url = 'https://api.tomtom.com/routing/1/calculateRoute/' + this.config.olat + ','+ this.config.olong + ':' + this.config.glat + ',' + this.config.glong + '/json?computeTravelTimeFor=all&sectionType=traffic&traffic=true&travelMode=car&key=' + this.config.apikey;
-		}
-	// Make the initial request to the helper then set up the timer to perform the updates
-	var hour = moment().hour();
+		// Make the initial request to the helper then set up the timer to perform the updates
+		let hour = moment().hour();
 
-	if( (hour >= 6) && (hour <=22) ) {
-            _this.sendSocketNotification('GET-TRAVEL-TIME', _this.url);
+		if( (hour >= 6) && (hour <=22) ) {
+            _this.sendSocketNotification('GET-TRAVEL-TIME', _this.config);
         }
     },
 
 
     getDom: function() {
         // Set up the local wrapper
-        var wrapper = null;
-
+        let wrapper = null;
 
         // If we have some data to display then build the results
         if (this.loaded) {
             wrapper = document.createElement('div');
 	 	    wrapper.className = 'route';
-			
-			var day = moment().format('dddd');
-			var title = 'Travel Time to ';
-			var travelTime = '';
-			var text = '';
 
-			// if weekday show drive time to work
-			if ((day != 'Saturday') && (day != 'Sunday') && (day != 'Friday')) {
-				title = title + 'Work: ';
-			} else {
-				title = title + 'Golf: ';
+			for(let i=0; i<this.route.length; i++) {
+				let row = document.createElement('div');
+				row.className = 'row';
+
+				let title = 'Travel Time to ';
+				let travelTime = '';
+				let text = '';
+				let path = './modules/MMM-Travel-Time/images/';
+
+				title = title + this.config.waypoint[i].title + ' ';
+				travelTime = Math.round(this.route[i].summary.travelTimeInSeconds / 60);
+				text = title + travelTime + ' min';
+
+				let icon = document.createElement('img');
+				icon.className = 'icon';
+				icon.setAttribute('height', '50');
+				icon.setAttribute('width', '50');
+				icon.src = path+this.config.waypoint[i].icon;
+
+				row.appendChild(icon);
+				let tempText = document.createElement('span');
+				tempText.className = 'tempText';
+				tempText.innerHTML = text;
+				row.appendChild(tempText);
+				wrapper.appendChild(row);
 			}
-
-			travelTime = Math.round(this.route.summary.travelTimeInSeconds/60);
-
-			text = title + travelTime + ' min';
-
-    		wrapper.innerHTML = text;
         } else {
             // Otherwise lets just use a simple div
             wrapper = document.createElement('div');
@@ -100,7 +106,7 @@ Module.register('MMM-Travel-Time', {
 
     socketNotificationReceived: function(notification, payload) {
         // check to see if the response was for us and used the same url
-        if (notification === 'GOT-TRAVEL-TIME' && payload.url === this.url) {
+        if (notification === 'GOT-TRAVEL-TIME') {
                 // we got some data so set the flag, stash the data to display then request the dom update
                 this.loaded = true;
                 this.route = payload.route;
